@@ -7,20 +7,16 @@ require "chronofage/version"
 Gem::Specification.new do |gem|
   gem.name          = "chronofage"
   gem.version       = Chronofage::VERSION
-  gem.authors       = ["Victor Goya"]
-  gem.email         = ["phorque@phorque.it"]
+  gem.authors       = ["Victor Goya", "Amuse Animation"]
+  gem.email         = ["v.goya@millimages.com"]
   gem.description   = "Cron based job scheduler"
   gem.summary       = "Cron based job scheduler"
-  gem.homepage      = "https://phorque.it"
+  gem.homepage      = "https://www.amusenetwork.com/"
 
   gem.files         = `git ls-files -z`.split("\x0")
-  gem.executables   = %w(chronofage)
   gem.require_paths = ["lib"]
-  gem.bindir        = 'bin'
 
   gem.licenses      = ["MIT"]
 
   gem.required_ruby_version = "~> 2.0"
-
-  gem.add_development_dependency "byebug"
 end
