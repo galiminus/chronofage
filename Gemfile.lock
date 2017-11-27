@@ -1,0 +1,19 @@
+PATH
+  remote: .
+  specs:
+    chronofage (0.0.1)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    byebug (9.1.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  byebug
+  chronofage!
+
+BUNDLED WITH
+   1.15.1
