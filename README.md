@@ -6,7 +6,7 @@ is run in its own process and you can spread the work on multiple hosts.
 
 ## Installation
 
-Copy the migration file and run it to create the `chronofage_jobs` and `chronofage_runners` tables.
+Copy the migration file and run it to create the `chronofage_jobs` table.
 
 ```
 rake chronofage_engine:install:migrations db:migrate
@@ -26,17 +26,6 @@ create_table "chronofage_jobs", force: :cascade do |t|
   t.datetime "failed_at"       # set when a job failed
   t.datetime "created_at",   null: false
   t.datetime "updated_at",   null: false
-end
-```
-
-The `chronofage_runners` table hold informations about the process currently running.
-
-```
-create_table "chronofage_runners", force: :cascade do |t|
-  t.string   "queue_name"
-  t.string   "host"
-  t.datetime "created_at", null: false
-  t.datetime "updated_at", null: false
 end
 ```
 
