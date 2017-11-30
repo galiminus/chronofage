@@ -30,6 +30,10 @@ module Chronofage
       update!(failed_at: Time.now)
     end
 
+    def retry!
+      job_class.constantize.perform_later(*deserialized_arguments)
+    end
+
     def deserialized_arguments
       ActiveJob::Arguments.deserialize(JSON.parse(arguments))
     end
