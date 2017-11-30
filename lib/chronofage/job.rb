@@ -9,20 +9,20 @@ module Chronofage
       ready.where(queue_name: queue_name).order(priority: :asc).first
     end
 
-    def execute!
-      start!
-      job_class.constantize.perform_now(*deserialized_arguments)
-      done!
+    def perform
+      started!
+      ActiveJob::Base.execute(job_data)
+      completed!
     rescue
       failed!
       raise
     end
 
-    def start!
+    def started!
       update!(started_at: Time.now, host: Chronofage::Job.host)
     end
 
-    def done!
+    def completed!
       update!(completed_at: Time.now)
     end
 
@@ -30,12 +30,28 @@ module Chronofage
       update!(failed_at: Time.now)
     end
 
-    def retry!
-      job_class.constantize.perform_later(*deserialized_arguments)
+    def ready?
+      state == :ready
     end
 
-    def deserialized_arguments
-      ActiveJob::Arguments.deserialize(JSON.parse(arguments))
+    def started?
+      state == :started
+    end
+
+    def failed?
+      state == :failed
+    end
+
+    def completed?
+      state == :completed
+    end
+
+    def retry!
+      job_class.constantize.perform_later(*(job_data["arguments"]))
+    end
+
+    def job_data
+      JSON.parse(arguments)
     end
 
     def concurrents
@@ -48,7 +64,7 @@ module Chronofage
       elsif started_at.present? && failed_at.present?
         :failed
       elsif started_at.present?
-        :running
+        :started
       else
         :ready
       end

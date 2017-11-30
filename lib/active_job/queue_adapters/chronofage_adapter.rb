@@ -4,10 +4,10 @@ module ActiveJob
       def enqueue(job)
         Chronofage::Job.create!({
           job_class: job.class,
-          arguments: ActiveJob::Arguments.serialize(job.arguments).to_json,
+          arguments: job.serialize.to_json,
           job_id: job.job_id,
           queue_name: job.queue_name,
-          priority: job.priority
+          priority: job.priority || 0
         })
       end
 
