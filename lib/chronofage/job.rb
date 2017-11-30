@@ -47,7 +47,7 @@ module Chronofage
     end
 
     def retry!
-      job_class.constantize.perform_later(*(job_data["arguments"]))
+      job_class.constantize.perform_later(*(ActiveJob::Arguments.deserialize(job_data["arguments"])))
     end
 
     def job_data
