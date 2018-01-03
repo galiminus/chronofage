@@ -11,10 +11,12 @@ module Chronofage
 
     def perform
       started!
-      ActiveJob::Base.execute(job_data)
+      output = ActiveJob::Base.execute(job_data)
+      self.update!(output: output)
       completed!
-    rescue
+    rescue => error
       failed!
+      self.update!(output: "#{error.message}\n#{error.backtrace}")
       raise
     end
 
