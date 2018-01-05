@@ -22,11 +22,11 @@ module Chronofage
       update!(started_at: Time.now, host: Chronofage::Job.host)
     end
 
-    def completed!(output)
+    def completed!(output = nil)
       update!(completed_at: Time.now, output: output)
     end
 
-    def failed!(output)
+    def failed!(output = nil)
       update!(failed_at: Time.now, output: output)
     end
 
