@@ -9,8 +9,11 @@ module Chronofage
       ActiveRecord::Base.transaction do
         ActiveRecord::Base.connection.execute('LOCK chronofage_jobs IN ACCESS EXCLUSIVE MODE')
 
-        ready.where(queue_name: queue_name).order(priority: :asc).first.tap do |job|
-          job.started! if job.present? && job.concurrents.count < concurrency
+        job = ready.where(queue_name: queue_name).order(priority: :asc).first
+        if job.present? && job.concurrents.count < concurrency
+          job
+        else
+          nil
         end
       end
     end
