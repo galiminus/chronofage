@@ -5,12 +5,17 @@ module Chronofage
     scope :ready, -> { where(started_at: nil) }
     scope :started, -> { where.not(started_at: nil).where(failed_at: nil, completed_at: nil) }
 
-    def self.next(queue_name)
-      ready.where(queue_name: queue_name).order(priority: :asc).first
+    def self.take_next(queue_name, concurrency)
+      ActiveRecord::Base.transaction do
+        ActiveRecord::Base.connection.execute('LOCK chronofage_jobs IN ACCESS EXCLUSIVE MODE')
+
+        ready.where(queue_name: queue_name).order(priority: :asc).first.tap do |job|
+          job.started! if job.present? && job.concurrents.count < concurrency
+        end
+      end
     end
 
     def perform
-      started!
       output = ActiveJob::Base.execute(job_data)
       completed!(output)
     rescue Exception => error
