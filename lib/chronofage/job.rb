@@ -11,6 +11,7 @@ module Chronofage
 
         job = ready.where(queue_name: queue_name).order(priority: :asc).first
         if job.present? && job.concurrents.count < concurrency
+          job.started!
           job
         else
           nil
