@@ -5,12 +5,12 @@ module Chronofage
     scope :ready, -> { where(started_at: nil) }
     scope :started, -> { where.not(started_at: nil).where(failed_at: nil, completed_at: nil) }
 
-    def self.take_next(queue_name, concurrency)
+    def self.take_next(queue_name, concurrency, global_concurrency)
       ActiveRecord::Base.transaction do
         ActiveRecord::Base.connection.execute('LOCK chronofage_jobs IN ACCESS EXCLUSIVE MODE')
 
         job = ready.where(queue_name: queue_name).order(priority: :asc).first
-        if job.present? && job.concurrents.count < concurrency
+        if job.present? && job.concurrents.count < concurrency && (global_concurrency == 0 || job.global_concurrents.count < global_concurrency)
           job.started!
           job
         else
@@ -64,7 +64,11 @@ module Chronofage
     end
 
     def concurrents
-      Chronofage::Job.started.where(queue_name: queue_name, host: Chronofage::Job.host)
+      global_concurrents.where(host: Chronofage::Job.host)
+    end
+
+    def global_concurrents
+      Chronofage::Job.started.where(queue_name: queue_name)
     end
 
     def state
