@@ -57,3 +57,9 @@ of 6 jobs, 2 for each host, and check for new jobs every 5 minutes.
 ```
 */5 * * * * cd /var/www/my_app && rake chronofage_engine:jobs:execute[heavy,2]
 ```
+
+You can also make Chronofage poll the database for new jobs to execute, this solution is way more reactive.
+
+```
+rake chronofage_engine:jobs:poll[heavy,2]
+```
