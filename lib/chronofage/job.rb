@@ -36,7 +36,18 @@ module Chronofage
     end
 
     def failed!(output = nil)
-      update!(failed_at: Time.now, output: output)
+      # Sometime we fail because we lose the connection to the database, in that case we retry a few times
+
+      retries = 3
+      begin
+        update!(failed_at: Time.now, output: output)
+      rescue => error
+        raise error if retries == 0
+        retries -= 1
+
+        sleep 5
+        retry
+      end
     end
 
     def ready?
