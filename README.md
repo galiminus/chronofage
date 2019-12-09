@@ -20,7 +20,7 @@ create_table "chronofage_jobs", force: :cascade do |t|
   t.string   "job_id"
   t.string   "queue_name"
   t.text     "arguments"
-  t.integer  "priority"
+  t.integer  "priority" .      # follows the `nice` convention (lower value means higher priority)
   t.datetime "started_at"      # set when a job is started
   t.datetime "completed_at"    # set when a job is completed successfuly
   t.datetime "failed_at"       # set when a job failed
