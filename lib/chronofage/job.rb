@@ -2,14 +2,16 @@ module Chronofage
   class Job < ::ActiveRecord::Base
     self.table_name = "chronofage_jobs"
 
+    scope :not_timed_out, -> { where("(started_at + (timeout_delay || ' minutes')::interval) > ?", Time.now).or(where(timeout_delay: nil)) }
     scope :ready, -> { where(started_at: nil) }
     scope :started, -> { where.not(started_at: nil).where(failed_at: nil, completed_at: nil) }
+    scope :available, -> { ready.where('scheduled_at <= ?', Time.now).or(where(scheduled_at: nil)) }
 
     def self.take_next(queue_name, concurrency, global_concurrency)
       ActiveRecord::Base.transaction do
         ActiveRecord::Base.connection.execute('LOCK chronofage_jobs IN ACCESS EXCLUSIVE MODE')
 
-        job = ready.where(queue_name: queue_name).order(priority: :asc).first
+        job = ready.available.where(queue_name: queue_name).order(priority: :asc).first
         if job.present? && job.concurrents.count < concurrency && (global_concurrency == 0 || job.global_concurrents.count < global_concurrency)
           job.started!
           job
@@ -28,7 +30,7 @@ module Chronofage
     end
 
     def started!
-      update!(started_at: Time.now, host: Chronofage::Job.host)
+      update!(started_at: Time.now, host: Chronofage::Job.host, pid: pid)
     end
 
     def completed!(output = nil)
@@ -79,7 +81,7 @@ module Chronofage
     end
 
     def global_concurrents
-      Chronofage::Job.started.where(queue_name: queue_name)
+      Chronofage::Job.started.not_timed_out.where(queue_name: queue_name)
     end
 
     def state
@@ -95,6 +97,10 @@ module Chronofage
     end
 
     private
+
+    def self.pid
+      Process.pid
+    end
 
     def self.host
       Socket.gethostname
